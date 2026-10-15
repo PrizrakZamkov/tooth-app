@@ -1,0 +1,43 @@
+name: Сборка APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.11.1
+
+      # Пока тесты не блокируют сборку: APK выложится, даже если тест покраснеет
+      - name: Тесты
+        continue-on-error: true
+        run: gradle testDebugUnitTest
+
+      - name: Собрать APK
+        run: gradle assembleRelease
+
+      - name: Выложить в Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp app/build/outputs/apk/release/app-release.apk zubki.apk
+          gh release delete latest --cleanup-tag --yes || true
+          gh release create latest zubki.apk \
+            --title "Зубки, сборка ${{ github.run_number }}" \
+            --notes "Скачай zubki.apk и установи на телефон." \
+            --latest

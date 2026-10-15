@@ -1,0 +1,7 @@
+<resources>
+    <color name="window_bg">#FF1F1B1A</color>
+    <color name="widget_card">#FF2A2523</color>
+    <color name="widget_card_part">#FF26403A</color>
+    <color name="widget_card_done">#FF4DBB9C</color>
+    <color name="widget_text">#FFF5EBE3</color>
+</resources>
