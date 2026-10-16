@@ -76,7 +76,7 @@ fun SettingsScreen(settings: ReminderSettings, notificationsOn: Boolean) {
                     Switch(
                         checked = settings.remindersOn,
                         onCheckedChange = { on ->
-                            settings.setRemindersOn(on)
+                            settings.enableReminders(on)
                             Reminders.scheduleAll(context)
                         },
                         colors = SwitchDefaults.colors(

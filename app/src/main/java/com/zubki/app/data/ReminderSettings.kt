@@ -33,7 +33,7 @@ class ReminderSettings(context: Context) {
         }
     }
 
-    fun setRemindersOn(on: Boolean) {
+    fun enableReminders(on: Boolean) {
         remindersOn = on
         prefs.edit().putBoolean("on", on).apply()
     }
