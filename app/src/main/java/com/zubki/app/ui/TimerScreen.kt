@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.zubki.app.data.ReminderSettings
 import com.zubki.app.data.Store
 import com.zubki.app.data.slotForNow
 import java.time.LocalDate
@@ -47,7 +48,7 @@ private val hints = listOf(
 
 // Таймер на две минуты: по 30 секунд на каждую четверть рта
 @Composable
-fun TimerScreen(store: Store, today: LocalDate, onClose: () -> Unit) {
+fun TimerScreen(store: Store, settings: ReminderSettings, today: LocalDate, onClose: () -> Unit) {
     val p = palette
     val haptic = LocalHapticFeedback.current
     val view = LocalView.current
@@ -58,7 +59,7 @@ fun TimerScreen(store: Store, today: LocalDate, onClose: () -> Unit) {
     val finished = remaining <= 0L
     val started = remaining < TOTAL_MS
     val quarter = ((TOTAL_MS - remaining) / QUARTER_MS).toInt().coerceIn(0, 3)
-    val slot = slotForNow()
+    val slot = slotForNow(settings.enabledSlots())
     val alreadyDone = store.doneAt(today, slot) != null
 
     // Пока идёт отсчёт, экран не гаснет

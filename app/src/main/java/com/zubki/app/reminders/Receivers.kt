@@ -11,8 +11,10 @@ import java.time.LocalDate
 // Сработал будильник: показываем напоминание и ставим следующее
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (!ReminderSettings(context).remindersOn) return
+        val settings = ReminderSettings(context)
+        if (!settings.remindersOn) return
         val slot = Reminders.slotOf(intent) ?: return
+        if (!settings.slotOn(slot)) return
 
         if (intent.action == Reminders.ACTION_DAILY) Reminders.scheduleAll(context)
         Reminders.show(context, slot)

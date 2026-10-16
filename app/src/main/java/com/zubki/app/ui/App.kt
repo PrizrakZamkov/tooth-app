@@ -60,14 +60,14 @@ fun App(store: Store, settings: ReminderSettings, today: LocalDate, notification
     ) {
         Crossfade(targetState = timerOpen, label = "timer") { open ->
             if (open) {
-                TimerScreen(store, today, onClose = { timerOpen = false })
+                TimerScreen(store, settings, today, onClose = { timerOpen = false })
             } else {
                 Column(Modifier.fillMaxSize()) {
                     Box(Modifier.weight(1f)) {
                         Crossfade(targetState = page, label = "page") { current ->
                             when (current) {
-                                Page.Today -> TodayScreen(store, today, onOpenTimer = { timerOpen = true })
-                                Page.Streak -> StreakScreen(store, today)
+                                Page.Today -> TodayScreen(store, settings, today, onOpenTimer = { timerOpen = true })
+                                Page.Streak -> StreakScreen(store, settings, today)
                                 Page.Settings -> SettingsScreen(settings, notificationsOn)
                             }
                         }

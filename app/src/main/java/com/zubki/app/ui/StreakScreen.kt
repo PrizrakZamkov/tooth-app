@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.zubki.app.data.ReminderSettings
 import com.zubki.app.data.Slot
 import com.zubki.app.data.Store
 import com.zubki.app.data.StreakInfo
@@ -56,7 +57,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
-fun StreakScreen(store: Store, today: LocalDate) {
+fun StreakScreen(store: Store, settings: ReminderSettings, today: LocalDate) {
     val info = streakInfo(store.markedDays(), today)
 
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -69,7 +70,7 @@ fun StreakScreen(store: Store, today: LocalDate) {
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             StreakCard(info)
-            MonthCard(store, today)
+            MonthCard(store, settings.enabledSlots(), today)
             BadgesCard(info.best)
         }
     }
@@ -121,7 +122,7 @@ private fun StreakCard(info: StreakInfo) {
 }
 
 @Composable
-private fun MonthCard(store: Store, today: LocalDate) {
+private fun MonthCard(store: Store, slots: List<Slot>, today: LocalDate) {
     val p = palette
     val current = YearMonth.from(today)
     var month by remember { mutableStateOf(current) }
@@ -166,7 +167,7 @@ private fun MonthCard(store: Store, today: LocalDate) {
             },
             label = "month",
         ) { m ->
-            MonthGrid(store, m, today)
+            MonthGrid(store, slots, m, today)
         }
     }
 }
@@ -192,7 +193,7 @@ private fun ArrowButton(symbol: String, enabled: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun MonthGrid(store: Store, month: YearMonth, today: LocalDate) {
+private fun MonthGrid(store: Store, slots: List<Slot>, month: YearMonth, today: LocalDate) {
     val offset = month.atDay(1).dayOfWeek.value - 1 // понедельник = 0
     val length = month.lengthOfMonth()
     val rows = (offset + length + 6) / 7
@@ -204,7 +205,7 @@ private fun MonthGrid(store: Store, month: YearMonth, today: LocalDate) {
                     val number = row * 7 + col - offset + 1
                     Box(Modifier.weight(1f).aspectRatio(1f)) {
                         if (number in 1..length) {
-                            DayCell(store, month.atDay(number), today)
+                            DayCell(store, slots, month.atDay(number), today)
                         }
                     }
                 }
@@ -213,19 +214,21 @@ private fun MonthGrid(store: Store, month: YearMonth, today: LocalDate) {
     }
 }
 
-// Цвет клетки: оба раза отмечены, один раз или ни разу. Внизу две точки: утро и вечер
+// Цвет клетки: отмечены все времена, часть или ни одного. Внизу точки: утро и вечер
 @Composable
-private fun DayCell(store: Store, day: LocalDate, today: LocalDate) {
+private fun DayCell(store: Store, slots: List<Slot>, day: LocalDate, today: LocalDate) {
     val p = palette
     val shape = RoundedCornerShape(12.dp)
-    val morning = store.doneAt(day, Slot.Morning) != null
-    val evening = store.doneAt(day, Slot.Evening) != null
+    // Показываем включённые времена и выключенные, если в них осталась отметка
+    val shown = Slot.entries.filter { it in slots || store.doneAt(day, it) != null }
+    val done = shown.count { store.doneAt(day, it) != null }
+    val full = shown.isNotEmpty() && done == shown.size
     val future = day.isAfter(today)
 
     val background by animateColorAsState(
         targetValue = when {
-            morning && evening -> p.mint
-            morning || evening -> p.cardDone
+            full -> p.mint
+            done > 0 -> p.cardDone
             else -> p.track.copy(alpha = 0.5f)
         },
         label = "dayBg",
@@ -243,7 +246,7 @@ private fun DayCell(store: Store, day: LocalDate, today: LocalDate) {
         Text(
             text = "${day.dayOfMonth}",
             color = when {
-                morning && evening -> p.onMint
+                full -> p.onMint
                 future -> p.textSoft.copy(alpha = 0.5f)
                 else -> p.text
             },
@@ -254,8 +257,10 @@ private fun DayCell(store: Store, day: LocalDate, today: LocalDate) {
         if (!future) {
             Spacer(Modifier.height(3.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                Dot(if (morning) p.sun else p.track)
-                Dot(if (evening) p.moon else p.track)
+                shown.forEach { slot ->
+                    val marked = store.doneAt(day, slot) != null
+                    Dot(if (!marked) p.track else if (slot == Slot.Morning) p.sun else p.moon)
+                }
             }
         }
     }

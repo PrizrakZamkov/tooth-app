@@ -7,11 +7,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -54,5 +57,28 @@ fun PillButton(
             .clip(CircleShape)
             .background(if (filled) p.mint else p.cardDone)
             .padding(horizontal = 28.dp, vertical = 14.dp),
+    )
+}
+
+// Переключатель в цветах приложения
+@Composable
+fun ZubkiSwitch(checked: Boolean, onChange: (Boolean) -> Unit, enabled: Boolean = true) {
+    val p = palette
+
+    Switch(
+        checked = checked,
+        onCheckedChange = onChange,
+        enabled = enabled,
+        colors = SwitchDefaults.colors(
+            checkedThumbColor = Color.White,
+            checkedTrackColor = p.mintDeep,
+            checkedBorderColor = p.mintDeep,
+            uncheckedThumbColor = p.textSoft,
+            uncheckedTrackColor = p.track,
+            uncheckedBorderColor = p.textSoft.copy(alpha = 0.4f),
+            disabledCheckedThumbColor = Color.White,
+            disabledCheckedTrackColor = p.mintDeep.copy(alpha = 0.5f),
+            disabledCheckedBorderColor = p.mintDeep.copy(alpha = 0.5f),
+        ),
     )
 }

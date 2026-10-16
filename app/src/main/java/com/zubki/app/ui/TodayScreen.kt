@@ -1,5 +1,6 @@
 package com.zubki.app.ui
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,16 +19,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.zubki.app.data.Slot
+import com.zubki.app.data.ReminderSettings
 import com.zubki.app.data.Store
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
-fun TodayScreen(store: Store, today: LocalDate, onOpenTimer: () -> Unit) {
+fun TodayScreen(store: Store, settings: ReminderSettings, today: LocalDate, onOpenTimer: () -> Unit) {
     val p = palette
-    val slots = Slot.entries
+    val slots = settings.enabledSlots()
     val doneCount = slots.count { store.doneAt(today, it) != null }
 
     Box(
@@ -54,7 +55,7 @@ fun TodayScreen(store: Store, today: LocalDate, onOpenTimer: () -> Unit) {
             Spacer(Modifier.height(36.dp))
 
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().animateContentSize(),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 slots.forEach { slot ->

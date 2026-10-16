@@ -10,7 +10,7 @@ import android.widget.RemoteViews
 import android.widget.Toast
 import com.zubki.app.R
 import com.zubki.app.data.Marks
-import com.zubki.app.data.Slot
+import com.zubki.app.data.ReminderSettings
 import com.zubki.app.data.slotForNow
 import java.time.LocalDate
 
@@ -26,7 +26,7 @@ class ZubkiWidget : AppWidgetProvider() {
         if (intent.action != ACTION_TAP) return
 
         val today = LocalDate.now()
-        val slot = slotForNow()
+        val slot = slotForNow(ReminderSettings(context).enabledSlots())
         if (Marks.doneAt(context, today, slot) == null) {
             Marks.mark(context, today, slot) // заодно обновит и сам виджет
         } else {
@@ -45,8 +45,9 @@ class ZubkiWidget : AppWidgetProvider() {
 
         private fun buildViews(context: Context): RemoteViews {
             val today = LocalDate.now()
-            val total = Slot.entries.size
-            val done = Slot.entries.count { Marks.doneAt(context, today, it) != null }
+            val slots = ReminderSettings(context).enabledSlots()
+            val total = slots.size
+            val done = slots.count { Marks.doneAt(context, today, it) != null }
 
             val (background, textColor) = when (done) {
                 0 -> R.drawable.widget_bg_idle to R.color.widget_text

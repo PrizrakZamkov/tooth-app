@@ -48,7 +48,7 @@ object Reminders {
         val settings = ReminderSettings(context)
         Slot.entries.forEach { slot ->
             val intent = alarmIntent(context, slot, ACTION_DAILY, 100)
-            if (settings.remindersOn) {
+            if (settings.remindersOn && settings.slotOn(slot)) {
                 val now = LocalDateTime.now()
                 var next = now.toLocalDate().atTime(settings.timeOf(slot))
                 if (!next.isAfter(now)) next = next.plusDays(1)

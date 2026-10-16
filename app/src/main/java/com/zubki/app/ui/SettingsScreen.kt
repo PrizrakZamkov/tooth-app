@@ -18,14 +18,11 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -33,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import com.zubki.app.data.ReminderSettings
 import com.zubki.app.data.Slot
 import com.zubki.app.reminders.Reminders
+import com.zubki.app.widget.ZubkiWidget
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -73,30 +71,31 @@ fun SettingsScreen(settings: ReminderSettings, notificationsOn: Boolean) {
                             fontSize = 13.sp,
                         )
                     }
-                    Switch(
+                    ZubkiSwitch(
                         checked = settings.remindersOn,
-                        onCheckedChange = { on ->
+                        onChange = { on ->
                             settings.enableReminders(on)
                             Reminders.scheduleAll(context)
                         },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = p.mintDeep,
-                            checkedBorderColor = p.mintDeep,
-                            uncheckedThumbColor = p.textSoft,
-                            uncheckedTrackColor = p.track,
-                            uncheckedBorderColor = p.textSoft.copy(alpha = 0.4f),
-                        ),
                     )
                 }
             }
 
-            AnimatedVisibility(visible = settings.remindersOn) {
-                SoftCard {
-                    TimeRow(Slot.Morning, settings)
-                    Spacer(Modifier.height(4.dp))
-                    TimeRow(Slot.Evening, settings)
-                }
+            SoftCard {
+                Text(
+                    text = "Когда чистишь",
+                    color = p.text,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    text = "Если чистишь раз в день, отключи лишнее время",
+                    color = p.textSoft,
+                    fontSize = 13.sp,
+                )
+                Spacer(Modifier.height(10.dp))
+                TimeRow(Slot.Morning, settings)
+                TimeRow(Slot.Evening, settings)
             }
 
             if (!notificationsOn) {
@@ -125,7 +124,9 @@ fun SettingsScreen(settings: ReminderSettings, notificationsOn: Boolean) {
 private fun TimeRow(slot: Slot, settings: ReminderSettings) {
     val p = palette
     val context = LocalContext.current
+    val on = settings.slotOn(slot)
     val time = settings.timeOf(slot)
+    val lastOne = on && settings.enabledSlots().size == 1
 
     Row(
         modifier = Modifier
@@ -136,19 +137,35 @@ private fun TimeRow(slot: Slot, settings: ReminderSettings) {
         Text(
             text = slot.title,
             modifier = Modifier.weight(1f),
-            color = p.text,
+            color = if (on) p.text else p.textSoft,
             fontSize = 18.sp,
         )
-        Text(
-            text = time.format(DateTimeFormatter.ofPattern("HH:mm")),
-            color = p.text,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .pressable { pickTime(context, slot, settings) }
-                .clip(CircleShape)
-                .background(p.cardDone)
-                .padding(horizontal = 20.dp, vertical = 10.dp),
+
+        // Время нужно только тем, кому приходят напоминания
+        AnimatedVisibility(visible = on && settings.remindersOn) {
+            Text(
+                text = time.format(DateTimeFormatter.ofPattern("HH:mm")),
+                color = p.text,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .padding(end = 12.dp)
+                    .pressable { pickTime(context, slot, settings) }
+                    .clip(CircleShape)
+                    .background(p.cardDone)
+                    .padding(horizontal = 20.dp, vertical = 10.dp),
+            )
+        }
+
+        // Последнее включённое время выключить нельзя, переключатель в этом случае неактивен
+        ZubkiSwitch(
+            checked = on,
+            onChange = { value ->
+                settings.switchSlot(slot, value)
+                Reminders.scheduleAll(context)
+                ZubkiWidget.refresh(context)
+            },
+            enabled = !lastOne,
         )
     }
 }

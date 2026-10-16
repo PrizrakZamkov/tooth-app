@@ -33,6 +33,9 @@ object Marks {
     }
 }
 
-// До трёх часов дня считаем, что речь про утро, дальше про вечер
-fun slotForNow(now: LocalTime = LocalTime.now()): Slot =
-    if (now.hour < 15) Slot.Morning else Slot.Evening
+// До трёх часов дня считаем, что речь про утро, дальше про вечер.
+// Если нужное время выключено, берём то, что осталось
+fun slotForNow(enabled: List<Slot> = Slot.entries, now: LocalTime = LocalTime.now()): Slot {
+    val wanted = if (now.hour < 15) Slot.Morning else Slot.Evening
+    return if (wanted in enabled) wanted else enabled.firstOrNull() ?: wanted
+}

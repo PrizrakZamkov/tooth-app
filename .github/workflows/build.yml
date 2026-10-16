@@ -79,9 +79,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp app/build/outputs/apk/release/app-release.apk zubki.apk
+          cp app/build/outputs/apk/release/app-release.apk chistka.apk
           gh release delete latest --cleanup-tag --yes || true
-          gh release create latest zubki.apk \
-            --title "Зубки, сборка ${{ github.run_number }}" \
-            --notes "Скачай zubki.apk и установи на телефон." \
+          gh release create latest chistka.apk \
+            --title "Чистка, сборка ${{ github.run_number }}" \
+            --notes "Скачай chistka.apk и установи на телефон." \
             --latest
