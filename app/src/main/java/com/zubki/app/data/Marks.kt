@@ -23,12 +23,12 @@ object Marks {
 
     fun mark(context: Context, day: LocalDate, slot: Slot) {
         if (doneAt(context, day, slot) != null) return
-        prefs(context).edit().putString(idOf(day, slot), LocalTime.now().format(timeFormat)).apply()
+        prefs(context).edit().putString(idOf(day, slot), LocalTime.now().format(timeFormat)).commit()
         ZubkiWidget.refresh(context)
     }
 
     fun unmark(context: Context, day: LocalDate, slot: Slot) {
-        prefs(context).edit().remove(idOf(day, slot)).apply()
+        prefs(context).edit().remove(idOf(day, slot)).commit()
         ZubkiWidget.refresh(context)
     }
 }
