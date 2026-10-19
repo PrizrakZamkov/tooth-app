@@ -28,7 +28,11 @@ class Store(private val context: Context) {
     init {
         prefs.registerOnSharedPreferenceChangeListener(listener)
     }
-
+    
+    fun reload() {
+        marks = readAll()
+    }
+    
     fun doneAt(day: LocalDate, slot: Slot): String? = marks[Marks.idOf(day, slot)]
 
     fun toggle(day: LocalDate, slot: Slot) {
