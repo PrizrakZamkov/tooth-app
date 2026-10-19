@@ -56,6 +56,7 @@ class MainActivity : ComponentActivity() {
         // Приложение могло пролежать в фоне с вечера: обновляем дату и виджет,
         // а заодно проверяем, не выключили ли уведомления в настройках телефона
         today = LocalDate.now()
+        store.reload()
         notificationsOn = notificationsEnabled()
         ZubkiWidget.refresh(this)
     }
